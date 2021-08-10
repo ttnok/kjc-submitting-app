@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提出用 PDF 生成アプリ（基礎情報処理 II C 言語版）</title>
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+    <style>
+        html {
+            background-color: rgb(247, 247, 247);
+        }
+        main {
+            width: 210mm;
+            margin: 0 auto;
+            padding: 2cm;
+            background-color: white;
+        }
+        #container_code, #container_result {
+            width: 700px;
+            height: 100px;
+            border: 1px solid gray;
+            margin: 0 auto;
+        }
+
+        .remark {
+            margin: 20px auto;
+            padding: 10px;
+            background-color: rgb(255, 250, 231);
+        }
+
+        input#title {
+            font-size: inherit;
+        }
+        input:invalid {
+            background-color: rgb(255, 202, 202);
+        }
+
+        @media print {
+            input {
+                border: 0;
+                border-bottom: 1px solid gray;
+            }
+            .remark {
+                display: none;
+            }
+        }
+    </style>
+<body>
+<main>
+    <h1>C 言語課題
+        <input type="text" id="title" placeholder="課題名" required>
+    </h1>
+
+    <span>学生番号</span> <input pattern="^[0-9a-z]\d{5}" id="student_id" placeholder="半角ハイフンなし" required>
+    <span>名前</span> <input type="text" placeholder="名前" required>
+    <h2>ソースコード</h2>
+    <div id="container_code"></div>
+    <h2>実行結果</h2>
+    <p class="remark">コンパイルコマンド、実行コマンドの行も含めて貼り付けてください。</p>
+    <div id="container_result"></div>
+
+    <div class="remark">
+        <h2>提出用 PDF ファイル生成の仕方</h2>
+        <p>まず、今見ているこのページはパソコン上の Google Chrome か Edge で開いていることを確認してください。そして、そのブラウザの右上辺りにあるメニューボタン（点が縦に3つ並んでいる）を押して「印刷」を選びます。</p>
+        <p>「送信先」を「PDF に保存」にします。その後「詳細設定」を開きます。</p>
+        <figure>
+            <img src="./print1.png" alt="印刷ダイアログ1" width="100%">
+        </figure>
+        <p>図のように各種設定を行ってください。とくに、「用紙サイズ」「余白」「倍率」に注意してください。</p>
+        <figure>
+            <img src="./print2.png" alt="印刷ダイアログ2" width="100%">
+        </figure>
+        <p>以上の設定ができたら、「保存」ボタンを押せば保存先を聞いてきますので、ファイル名を指定した上で、適切なフォルダに保存してください。</p>
+    </div>
+</main>
+
+<script>
+const $ = query => document.querySelector(query);
+
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' }});
+require(["vs/editor/editor.main"], () => {
+    const width = 700;
+
+    const container_code = $('#container_code');
+    const container_result = $('#container_result');
+    const editor_code = monaco.editor.create($('#container_code'), {
+        value: `\n\n\n\n`,
+        language: 'c',
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        wrappingStrategy: 'advanced',
+        minimap: {
+            enabled: false
+        }
+    });
+    const editor_result = monaco.editor.create($('#container_result'), {
+        value: `\n\n`,
+        language: 'txt',
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        wrappingStrategy: 'advanced',
+        minimap: {
+            enabled: false
+        }
+    });
+
+    const update_height = (container, editor) => {
+        const height = editor.getContentHeight();
+        container.style.width = `${width}px`;
+        container.style.height = `${height+25}px`;
+        editor.layout({width, height});
+    };
+
+    editor_code.onDidChangeModelContent(e => {
+        update_height(container_code, editor_code)
+    });
+    editor_result.onDidChangeModelContent(e => {
+        update_height(container_result, editor_result)
+    });
+
+    update_height(container_code, editor_code)
+    update_height(container_result, editor_result)
+});
+
+let title = '課題名を入力せよ';
+
+$('#title').addEventListener('input', e => {
+    title = e.target.value;
+});
+$('#student_id').addEventListener('input', e => {
+    if (e.target.validity.valid) {
+        document.title = `${e.target.value}_${title}` ;
+    }
+});
+
+</script>
+</body>
+</html>
